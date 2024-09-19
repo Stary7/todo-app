@@ -78,20 +78,23 @@ const TodoScreen = () => {
       <Button
         title={editingTaskId ? "Update Task" : "Add Task"}
         onPress={handleAddOrUpdateTask}
+        color="#4CAF50"
       />
       <FlatList
         data={tasks}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.taskItem}>
-            <Text>{item.title}</Text>
-            <TouchableOpacity onPress={() => {
+            <View style={styles.taskContent}>
+              <Text style={styles.taskTitle}> {item.title} </Text>
+            </View>
+            <TouchableOpacity style={styles.editButton} onPress={() => {
               setTitle(item.title);
               setEditingTaskId(item._id);
             }}>
-              <Text style={styles.editText}>Edit</Text>
+              <Text style={styles.editText}> Edit </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDeleteTask(item._id)}>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteTask(item._id)}>
               <Text style={styles.deleteText}>Delete</Text>
             </TouchableOpacity>
           </View>
@@ -129,8 +132,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    marginBottom: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    elevation: 2, // Shadow effect on Android
+    shadowColor: '#000', // Shadow effect on iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  taskContent: {
+    flex: 1,
+  },
+  taskTitle: {
+    fontSize: 16,
+  },
+  editButton: {
+    marginRight: 10,
+  },
+  deleteButton: {
+    marginLeft: 10,
   },
   editText: {
     color: '#4CAF50',

@@ -1,60 +1,29 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const RegisterScreen = () => {
-  const [username, setUsername] = useState('');
+const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  const handleRegister = async () => {
+  const handleLogin = async () => {
     try {
-      const response = await axios.post('https://backend-todo-suoo.onrender.com/api/auth/register', {
-        username,
-        email,
-        password,
-      });
-
-      Alert.alert('Success', 'Registration complete');
-      router.push('/screens/LoginScreen'); // Navigate to LoginScreen after successful registration
+      const response = await axios.post('https://backend-todo-suoo.onrender.com/api/auth/login', { email, password });
+      const { token } = response.data;
+      await AsyncStorage.setItem('token', token);
+      router.push('/screens/TodoScreen'); // Navigate to TodoScreen after successful login
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.msg) {
-        if (error.response.data.msg === 'User already exists') {
-          Alert.alert(
-            'User Already Exists',
-            'This email is already registered. Would you like to log in?',
-            [
-              {
-                text: 'Cancel',
-                style: 'cancel',
-              },
-              {
-                text: 'Login',
-                onPress: () => router.push('/screens/LoginScreen'),
-              },
-            ]
-          );
-        } else {
-          Alert.alert('Error', error.response.data.msg);
-        }
-      } else {
-        Alert.alert('Error', 'Registration failed. Please try again.');
-      }
+      console.error('Login error:', error.response ? error.response.data : error.message);
+      Alert.alert('Login failed', error.response ? error.response.data.msg || 'Invalid credentials' : 'An unexpected error occurred');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
+      <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -70,10 +39,10 @@ const RegisterScreen = () => {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title="Register" onPress={handleRegister} />
+      <Button title="Login" onPress={handleLogin} />
       <Button
-        title="Already have an account? Login"
-        onPress={() => router.push('/screens/LoginScreen')}
+        title="Don't have an account? Register"
+        onPress={() => router.push('/screens/RegisterScreen')}
       />
     </View>
   );
@@ -106,4 +75,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen;
+export default LoginScreen;
