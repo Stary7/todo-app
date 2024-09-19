@@ -1,50 +1,102 @@
-# Welcome to your Expo app 👋
+# Welcome to Your Expo App 🚀
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This Expo project is configured to work with a backend service and includes details on the API endpoints and deployment links.
 
-## Get started
+## Project Overview
 
-1. Install dependencies
+This app is connected to the backend service hosted at:
 
-   ```bash
-   npm install
-   ```
+- **Backend URL**: `https://backend-todo-suoo.onrender.com`
 
-2. Start the app
+## API Endpoints
 
-   ```bash
-    npx expo start
-   ```
+### Authentication
 
-In the output, you'll find options to open the app in a
+- **Register User**
+  - **URL**: `/api/auth/register`
+  - **Method**: POST
+  - **Request Body**:
+    ```json
+    {
+      "username": "your_username",
+      "email": "your_email@example.com",
+      "password": "your_password"
+    }
+    ```
+  - **Success Response**:
+    - **Code**: 201
+    - **Content**: `{ "message": "User registered successfully" }`
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Login User**
+  - **URL**: `/api/auth/login`
+  - **Method**: POST
+  - **Request Body**:
+    ```json
+    {
+      "email": "your_email@example.com",
+      "password": "your_password"
+    }
+    ```
+  - **Success Response**:
+    - **Code**: 200
+    - **Content**: `{ "token": "your_jwt_token" }`
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Tasks
 
-## Get a fresh project
+- **Get Tasks**
+  - **URL**: `/api/tasks`
+  - **Method**: GET
+  - **Headers**:
+    - `Authorization: Bearer <your_jwt_token>`
+  - **Success Response**:
+    - **Code**: 200
+    - **Content**: `[ { "id": "task_id", "title": "Task Title", "completed": false } ]`
 
-When you're ready, run:
+- **Create Task**
+  - **URL**: `/api/tasks`
+  - **Method**: POST
+  - **Request Body**:
+    ```json
+    {
+      "title": "New Task Title"
+    }
+    ```
+  - **Headers**:
+    - `Authorization: Bearer <your_jwt_token>`
+  - **Success Response**:
+    - **Code**: 201
+    - **Content**: `{ "id": "task_id", "title": "New Task Title", "completed": false }`
 
-```bash
-npm run reset-project
-```
+- **Update Task**
+  - **URL**: `/api/tasks/{id}`
+  - **Method**: PUT
+  - **Request Body**:
+    ```json
+    {
+      "title": "Updated Task Title",
+      "completed": true
+    }
+    ```
+  - **Headers**:
+    - `Authorization: Bearer <your_jwt_token>`
+  - **Success Response**:
+    - **Code**: 200
+    - **Content**: `{ "id": "task_id", "title": "Updated Task Title", "completed": true }`
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- **Delete Task**
+  - **URL**: `/api/tasks/{id}`
+  - **Method**: DELETE
+  - **Headers**:
+    - `Authorization: Bearer <your_jwt_token>`
+  - **Success Response**:
+    - **Code**: 200
+    - **Content**: `{ "message": "Task deleted successfully" }`
 
-## Learn more
+## Deployment
 
-To learn more about developing your project with Expo, look at the following resources:
+To build the app for preview or production, use the following commands:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **Build for Preview** (APK for Android):
+  ```bash
+  eas build --profile preview --platform android
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
