@@ -100,3 +100,8 @@ To build the app for preview or production, use the following commands:
   ```bash
   eas build --profile preview --platform android
 
+ 
+
+![App Screenshot](./assets/todo-app.png)
+
+## Application url--->https://expo.dev/accounts/starydv-7/projects/todo-app/builds/004e7f38-0e18-473c-8d26-b0139639ce0f
