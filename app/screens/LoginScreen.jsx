@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, TextInput, Button, Text, Alert, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
   const handleLogin = async () => {
     try {
       const response = await axios.post('https://backend-todo-suoo.onrender.com/api/auth/login', { email, password });
       const { token } = response.data;
       await AsyncStorage.setItem('token', token);
-      navigation.navigate('TodoScreen'); // Navigate to TodoScreen
+      router.push('/screens/TodoScreen'); // Navigate to TodoScreen after successful login
     } catch (error) {
       console.error('Login error:', error.response ? error.response.data : error.message);
       Alert.alert('Login failed', error.response ? error.response.data.msg || 'Invalid credentials' : 'An unexpected error occurred');
@@ -37,12 +39,16 @@ const LoginScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
-        <Text style={styles.registerText}>Don't have an account? Register</Text>
-      </TouchableOpacity>
+      <Button
+        title="Login"
+        onPress={handleLogin}
+        color="#4CAF50"
+      />
+      <Button
+        title="Don't have an account? Register"
+        onPress={() => router.push('/screens/RegisterScreen')}
+        color="#4CAF50"
+      />
     </View>
   );
 };

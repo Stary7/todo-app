@@ -5,24 +5,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TodoScreen = () => {
   const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
   const [title, setTitle] = useState('');
   const [editingTaskId, setEditingTaskId] = useState(null);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const response = await axios.get('https://backend-todo-suoo.onrender.com/api/tasks', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setTasks(response.data);
-      } catch (error) {
-        Alert.alert('Error', 'Failed to fetch tasks');
-      }
-    };
-
     fetchTasks();
   }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.get('https://backend-todo-suoo.onrender.com/api/tasks', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const fetchedTasks = response.data;
+      setTasks(fetchedTasks.filter(task => !task.completed));
+      setCompletedTasks(fetchedTasks.filter(task => task.completed));
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch tasks');
+    }
+  };
 
   const handleAddOrUpdateTask = async () => {
     try {
@@ -41,10 +44,7 @@ const TodoScreen = () => {
       setTitle('');
       setEditingTaskId(null);
       // Refresh the task list
-      const response = await axios.get('https://backend-todo-suoo.onrender.com/api/tasks', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTasks(response.data);
+      fetchTasks();
     } catch (error) {
       Alert.alert('Error', 'Failed to add or update task');
     }
@@ -57,15 +57,41 @@ const TodoScreen = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refresh the task list
-      const response = await axios.get('https://backend-todo-suoo.onrender.com/api/tasks', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTasks(response.data);
+      fetchTasks();
     } catch (error) {
       Alert.alert('Error', 'Failed to delete task');
     }
   };
 
+  const handleToggleComplete = async (id) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      console.log('Updating task completion:', id); // Debugging line
+  
+      // Find the task in the local state and mark it as completed
+      setTasks(prevTasks => {
+        const updatedTasks = prevTasks.filter(task => task._id !== id);
+        return updatedTasks;
+      });
+  
+      // Add the task to the completedTasks list
+      const taskToComplete = tasks.find(task => task._id === id);
+      if (taskToComplete) {
+        setCompletedTasks(prevCompletedTasks => [...prevCompletedTasks, taskToComplete]);
+      }
+  
+      // Update task on the backend
+      await axios.patch(`https://backend-todo-suoo.onrender.com/api/tasks/${id}`, { completed: true }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      console.log('Task successfully updated'); // Debugging line
+    } catch (error) {
+      console.error('Error updating task completion:', error); // Debugging line
+      Alert.alert('Error', 'Failed to toggle task completion');
+    }
+  };
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{editingTaskId ? 'Edit Task' : 'Add New Task'}</Text>
@@ -80,20 +106,41 @@ const TodoScreen = () => {
         onPress={handleAddOrUpdateTask}
         color="#4CAF50"
       />
+      
+      <Text style={styles.subtitle}>Tasks</Text>
       <FlatList
         data={tasks}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.taskItem}>
             <View style={styles.taskContent}>
-              <Text style={styles.taskTitle}> {item.title} </Text>
+              <Text style={styles.taskTitle}>{item.title}</Text>
             </View>
+            <TouchableOpacity style={styles.completeButton} onPress={() => handleToggleComplete(item._id)}>
+              <Text style={styles.completeText}>Complete</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.editButton} onPress={() => {
               setTitle(item.title);
               setEditingTaskId(item._id);
             }}>
-              <Text style={styles.editText}> Edit </Text>
+              <Text style={styles.editText}>Edit </Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteTask(item._id)}>
+              <Text style={styles.deleteText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+      
+      <Text style={styles.subtitle}>Completed Tasks </Text>
+      <FlatList
+        data={completedTasks}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <View style={styles.taskItem}>
+            <View style={styles.taskContent}>
+              <Text style={styles.taskTitle}>{item.title} </Text>
+            </View>
             <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteTask(item._id)}>
               <Text style={styles.deleteText}>Delete</Text>
             </TouchableOpacity>
@@ -114,6 +161,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 10,
     color: '#333',
   },
   input: {
@@ -146,6 +199,15 @@ const styles = StyleSheet.create({
   },
   taskTitle: {
     fontSize: 16,
+  },
+  completeButton: {
+    marginRight: 10,
+    backgroundColor: '#4CAF50',
+    padding: 5,
+    borderRadius: 5,
+  },
+  completeText: {
+    color: '#fff',
   },
   editButton: {
     marginRight: 10,
